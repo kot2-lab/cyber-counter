@@ -1,200 +1,147 @@
+# 完全版 多進数アナログカウンタ（全部入り最終版）
+
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>ULTIMATE CYBER COUNTER</title>
+<title>全部入り最終版 多進数アナログカウンタ</title>
 
 <style>
-
-/* =========================================
-   ROOT
-========================================= */
-
 :root{
-    --bg-color:#000000;
+    --bg-color:#000;
     --accent-color:#39ff14;
     --reset-color:#ff3333;
-    --dial-bg:#111111;
-    --glow-strength:1;
+    --dial-bg:#111;
 }
-
-/* =========================================
-   BODY
-========================================= */
 
 body{
     margin:0;
     background:var(--bg-color);
     color:white;
-
     font-family:'Meiryo',sans-serif;
-
     display:flex;
     flex-direction:column;
-
     align-items:center;
     justify-content:center;
-
     height:100vh;
-
     overflow:hidden;
-
-    transition:
-        background 0.5s,
-        color 0.5s;
 }
 
-/* =========================================
-   ROOT BADGE
-========================================= */
+body.matrix{
+    background:
+        repeating-linear-gradient(
+            0deg,
+            #001100,
+            #001100 2px,
+            #000 2px,
+            #000 4px
+        );
+}
 
-#rootBadge{
+body.rgb{
+    animation:rgbbg 6s linear infinite;
+}
 
+@keyframes rgbbg{
+    0%{filter:hue-rotate(0deg);}    
+    100%{filter:hue-rotate(360deg);}    
+}
+
+body.crt::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+        linear-gradient(
+            rgba(255,255,255,0.03) 50%,
+            transparent 50%
+        );
+    background-size:100% 4px;
+    z-index:9999;
+}
+
+#fpsCounter{
     position:absolute;
-
     top:20px;
     left:30px;
-
     color:var(--accent-color);
-
-    font-size:1.5rem;
     font-weight:900;
-
-    opacity:0;
-
-    text-shadow:
-        0 0 20px var(--accent-color);
-
-    transition:0.3s;
-}
-
-/* =========================================
-   FPS DISPLAY
-========================================= */
-
-#fpsDisplay{
-
-    position:absolute;
-
-    left:30px;
-    bottom:20px;
-
-    color:var(--accent-color);
-
     font-size:1.2rem;
-    font-weight:900;
-
-    opacity:0;
-
-    transition:0.3s;
-
-    text-shadow:
-        0 0 10px var(--accent-color);
 }
 
-/* =========================================
-   COMMAND PANEL
-========================================= */
+#autoStatus{
+    position:absolute;
+    left:30px;
+    top:60px;
+    background:rgba(0,0,0,0.75);
+    color:var(--accent-color);
+    border:2px solid var(--accent-color);
+    border-radius:20px;
+    padding:15px 20px;
+    font-size:1.1rem;
+    font-weight:900;
+    display:none;
+    z-index:999;
+    box-shadow:0 0 20px rgba(57,255,20,0.4);
+}
 
 #commandPanel{
-
     position:absolute;
-
     left:30px;
-    top:80px;
-
-    width:320px;
-
-    background:
-        rgba(0,0,0,0.78);
-
-    border:
-        2px solid var(--accent-color);
-
+    top:150px;
+    width:340px;
+    background:rgba(0,0,0,0.82);
+    border:2px solid var(--accent-color);
     border-radius:20px;
-
     padding:20px;
-
     color:var(--accent-color);
-
     font-weight:900;
-
     opacity:0;
-
-    /* ここ重要 */
     pointer-events:auto;
-
-    transform:
-        translateY(-10px);
-
-    transition:
-        0.25s;
-
-    box-shadow:
-        0 0 25px rgba(57,255,20,0.25);
-
+    transform:translateY(-10px);
+    transition:0.25s;
+    box-shadow:0 0 25px rgba(57,255,20,0.25);
     max-height:70vh;
-
     overflow-y:auto;
-
     overscroll-behavior:contain;
-
     backdrop-filter:blur(8px);
+    z-index:999;
 }
 
 #commandPanel.show{
-
     opacity:1;
-
-    transform:
-        translateY(0);
+    transform:translateY(0);
 }
 
-.cmd-title{
+#commandPanel::-webkit-scrollbar{
+    width:10px;
+}
 
+#commandPanel::-webkit-scrollbar-thumb{
+    background:var(--accent-color);
+    border-radius:20px;
+    box-shadow:0 0 10px var(--accent-color);
+}
+
+.command-title{
     font-size:1.5rem;
-
     margin-bottom:15px;
-
-    text-shadow:
-        0 0 15px var(--accent-color);
 }
 
-.cmd-list div{
-
-    margin-bottom:10px;
-
-    padding-bottom:10px;
-
-    border-bottom:
-        1px solid rgba(255,255,255,0.08);
+.command-item{
+    margin-bottom:15px;
+    line-height:1.5;
 }
-
-.cmd-list b{
-
-    color:var(--accent-color);
-
-    text-shadow:
-        0 0 10px var(--accent-color);
-}
-
-/* =========================================
-   TOTAL DISPLAY
-========================================= */
 
 #globalDecimalDisplay{
-
     position:absolute;
-
     top:20px;
     right:40px;
-
     text-align:right;
-
     border-right:6px solid var(--accent-color);
-
     padding-right:20px;
 }
 
@@ -204,259 +151,146 @@ body{
 }
 
 .global-value{
-
     color:var(--accent-color);
-
     font-size:4rem;
     font-weight:900;
-
     line-height:1;
-
-    text-shadow:
-        0 0 calc(20px * var(--glow-strength))
-        rgba(57,255,20,0.7);
+    text-shadow:0 0 20px rgba(57,255,20,0.5);
 }
-
-/* =========================================
-   HEADER
-========================================= */
 
 .header{
     margin-bottom:20px;
 }
 
 select{
-
     background:#111;
     color:var(--accent-color);
-
     border:3px solid var(--accent-color);
     border-radius:40px;
-
     font-size:2rem;
     font-weight:900;
-
     padding:12px 30px;
-
     outline:none;
 }
 
-/* =========================================
-   INPUT
-========================================= */
-
 .input-panel{
-
     display:flex;
-
     gap:20px;
-
     align-items:center;
-
     margin-bottom:30px;
 }
 
 #countInput{
-
     width:700px;
-
     background:#111;
     color:var(--accent-color);
-
     border:4px solid var(--accent-color);
     border-radius:20px;
-
     font-size:2rem;
     font-weight:900;
-
     padding:15px 20px;
-
     outline:none;
-
-    transition:0.2s;
-}
-
-#countInput:focus{
-
-    box-shadow:
-        0 0 20px rgba(57,255,20,0.7);
 }
 
 .btn-set{
-
     background:transparent;
-
     color:var(--accent-color);
-
     border:4px solid var(--accent-color);
     border-radius:20px;
-
     font-size:2rem;
     font-weight:900;
-
     padding:15px 30px;
-
     cursor:pointer;
 }
 
-/* =========================================
-   DIALS
-========================================= */
-
 .dials-container{
-
     display:flex;
-
     flex-direction:row-reverse;
-
     gap:40px;
-
     overflow-x:auto;
-
     max-width:95vw;
-
     padding:20px;
-
     margin-bottom:40px;
 }
 
 .dial-wrapper{
-
     display:flex;
     flex-direction:column;
     align-items:center;
-
     min-width:280px;
 }
 
-/* =========================================
-   DIAL
-========================================= */
-
 .dial{
-
     position:relative;
-
     width:260px;
     height:260px;
-
     border-radius:50%;
-
     background:var(--dial-bg);
-
     border:8px solid #333;
-
     margin-bottom:15px;
-
     box-shadow:
-        0 0 calc(30px * var(--glow-strength))
-        rgba(57,255,20,0.2);
+        0 0 30px rgba(57,255,20,0.15),
+        inset 0 0 20px rgba(57,255,20,0.05);
 }
 
 .dial::after{
-
     content:"";
-
     position:absolute;
-
     left:50%;
     top:50%;
-
     width:20px;
     height:20px;
-
     background:var(--accent-color);
-
     border-radius:50%;
-
     transform:translate(-50%,-50%);
-
     z-index:20;
+    box-shadow:0 0 15px var(--accent-color);
 }
-
-/* =========================================
-   DIAL NUMBER
-========================================= */
-
-.dial-number{
-
-    position:absolute;
-
-    left:50%;
-    top:50%;
-
-    font-size:1.5rem;
-    font-weight:900;
-
-    color:#333;
-
-    transition:0.2s;
-}
-
-/* =========================================
-   HAND
-========================================= */
 
 .hand{
-
     position:absolute;
-
     bottom:50%;
     left:50%;
-
     width:10px;
     height:110px;
-
     background:var(--accent-color);
-
     border-radius:20px;
-
     transform-origin:bottom center;
-
     box-shadow:
-        0 0 calc(20px * var(--glow-strength))
-        var(--accent-color);
-
-    transition:transform 0.05s linear;
-
+        0 0 20px var(--accent-color),
+        0 0 40px rgba(57,255,20,0.4);
+    transition:transform 0.08s linear;
     z-index:10;
 }
 
-/* =========================================
-   DIGIT DISPLAY
-========================================= */
-
-.digit-display{
-
-    font-size:7rem;
+.dial-number{
+    position:absolute;
+    left:50%;
+    top:50%;
+    font-size:1.5rem;
     font-weight:900;
-
-    line-height:1;
-
-    color:var(--accent-color);
-
-    text-shadow:
-        0 0 calc(20px * var(--glow-strength))
-        rgba(57,255,20,0.8);
+    color:#333;
+    transition:0.2s;
 }
 
-/* =========================================
-   BUTTONS
-========================================= */
+.digit-display{
+    font-size:7rem;
+    font-weight:900;
+    line-height:1;
+    color:var(--accent-color);
+    text-shadow:
+        0 0 20px rgba(57,255,20,0.6),
+        0 0 40px rgba(57,255,20,0.3);
+}
 
 .controls{
-
     display:flex;
-
     gap:30px;
 }
 
 button{
-
     background:transparent;
-
     cursor:pointer;
-
     transition:0.15s;
 }
 
@@ -469,291 +303,139 @@ button:active{
 }
 
 .btn-main{
-
     color:var(--accent-color);
-
     border:5px solid var(--accent-color);
     border-radius:25px;
-
     font-size:4rem;
     font-weight:900;
-
     padding:15px 60px;
 }
 
 .btn-reset{
-
     color:var(--reset-color);
-
     border:4px solid var(--reset-color);
     border-radius:25px;
-
     font-size:2rem;
     font-weight:900;
-
     padding:20px 40px;
 }
 
-/* =========================================
-   SCROLLBAR
-========================================= */
-
 ::-webkit-scrollbar{
-    width:16px;
-    height:16px;
-}
-
-::-webkit-scrollbar-track{
-    background:#111;
+    width:12px;
+    height:12px;
 }
 
 ::-webkit-scrollbar-thumb{
-
-    background:
-        linear-gradient(
-            180deg,
-            #7dff6b,
-            #39ff14,
-            #00cc44
-        );
-
+    background:var(--accent-color);
     border-radius:20px;
-
-    box-shadow:
-        0 0 20px rgba(57,255,20,0.7);
+    box-shadow:0 0 10px var(--accent-color);
 }
-
-/* =========================================
-   CRT
-========================================= */
-
-.crt::before{
-
-    content:"";
-
-    position:fixed;
-
-    left:0;
-    top:0;
-
-    width:100%;
-    height:100%;
-
-    pointer-events:none;
-
-    background:
-        repeating-linear-gradient(
-            to bottom,
-            rgba(255,255,255,0.03),
-            rgba(255,255,255,0.03) 2px,
-            transparent 2px,
-            transparent 4px
-        );
-
-    animation:
-        crtFlicker 0.08s infinite;
-}
-
-@keyframes crtFlicker{
-
-    0%{
-        opacity:0.92;
-    }
-
-    50%{
-        opacity:1;
-    }
-
-    100%{
-        opacity:0.95;
-    }
-}
-
 </style>
 </head>
 
 <body>
 
-<div id="rootBadge">
-    ROOT MODE
-</div>
+<div id="fpsCounter">FPS: 0</div>
 
-<div id="fpsDisplay">
-    FPS: 0
+<div id="autoStatus">
+AUTO RUNNING<br>
+[ ESCで停止 ]
 </div>
 
 <div id="commandPanel">
 
-    <div class="cmd-title">
-        COMMAND LIST
-    </div>
+<div class="command-title">
+COMMAND LIST
+</div>
 
-    <div class="cmd-list">
+<div class="command-item">
+/help<br>
+コマンド一覧表示
+</div>
 
-        <div><b>/help</b> - コマンド一覧表示</div>
+<div class="command-item">
+/auto<br>
+自動カウントON/OFF
+</div>
 
-        <div><b>/matrix</b> - Matrix風カラー</div>
+<div class="command-item">
+/matrix<br>
+Matrixモード
+</div>
 
-        <div><b>/red</b> - 赤テーマ</div>
+<div class="command-item">
+/rgb<br>
+RGBモード
+</div>
 
-        <div><b>/blue</b> - 青テーマ</div>
+<div class="command-item">
+/crt<br>
+CRTモード
+</div>
 
-        <div><b>/rgb</b> - RGB発光モード</div>
-
-        <div><b>/rgb_off</b> - RGB停止</div>
-
-        <div><b>/crt</b> - CRTスキャンライン</div>
-
-        <div><b>/crt_off</b> - CRT解除</div>
-
-        <div><b>/famicom</b> - 8bitサウンド化</div>
-
-        <div><b>/overclock</b> - 超高速モード</div>
-
-        <div><b>/root</b> - ROOT演出起動</div>
-
-        <div><b>/reset</b> - 全状態初期化</div>
-
-        <div><b>/auto</b> - 自動加算ON/OFF</div>
-
-        <div><b>/speed 100</b> - Auto速度変更</div>
-
-        <div><b>/stats</b> - FPS表示</div>
-
-    </div>
+<div class="command-item">
+/root<br>
+ROOTモード
+</div>
 
 </div>
 
 <div id="globalDecimalDisplay">
-
-    <div class="global-label">
-        現在の合計値（10進数）
-    </div>
-
-    <div class="global-value"
-         id="totalDecimal">
-        0
-    </div>
-
+<div class="global-label">
+現在の合計値（10進数）
+</div>
+<div class="global-value" id="totalDecimal">0</div>
 </div>
 
 <div class="header">
-
-    <select id="baseSelect"
-            onchange="syncInput(); updateDisplay();">
-
-        <option value="2">【 2進数 】</option>
-        <option value="3">【 3進数 】</option>
-        <option value="8">【 8進数 】</option>
-        <option value="10" selected>【 10進数 】</option>
-        <option value="16">【 16進数 】</option>
-
-    </select>
-
+<select id="baseSelect" onchange="syncInput(); updateDisplay();">
+<option value="2">【 2進数 】</option>
+<option value="3">【 3進数 】</option>
+<option value="8">【 8進数 】</option>
+<option value="10" selected>【 10進数 】</option>
+<option value="16">【 16進数 】</option>
+</select>
 </div>
 
 <div class="input-panel">
-
-    <input type="text"
-           id="countInput"
-           value="0">
-
-    <button class="btn-set"
-            onclick="setCount()">
-
-        反映
-
-    </button>
-
+<input type="text" id="countInput" value="0">
+<button class="btn-set" onclick="setCount()">反映</button>
 </div>
 
-<div class="dials-container"
-     id="dialsContainer">
-</div>
+<div class="dials-container" id="dialsContainer"></div>
 
 <div class="controls">
 
-    <button class="btn-main"
+<button class="btn-main"
+    onmousedown="startChanging(-1)"
+    onmouseup="stopChanging()"
+    onmouseleave="stopChanging()">
+減少
+</button>
 
-        onmousedown="startChanging(-1)"
-        onmouseup="stopChanging()"
-        onmouseleave="stopChanging()"
+<button class="btn-reset" onclick="resetCount()">
+リセット
+</button>
 
-        ontouchstart="startChanging(-1)"
-        ontouchend="stopChanging()">
-
-        減少
-
-    </button>
-
-    <button class="btn-reset"
-            onclick="resetCount()">
-
-        リセット
-
-    </button>
-
-    <button class="btn-main"
-
-        onmousedown="startChanging(1)"
-        onmouseup="stopChanging()"
-        onmouseleave="stopChanging()"
-
-        ontouchstart="startChanging(1)"
-        ontouchend="stopChanging()">
-
-        増加
-
-    </button>
+<button class="btn-main"
+    onmousedown="startChanging(1)"
+    onmouseup="stopChanging()"
+    onmouseleave="stopChanging()">
+増加
+</button>
 
 </div>
 
 <script>
 
-/* =========================================
-   GLOBALS
-========================================= */
-
-const chars =
-"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
 let currentCount = 0n;
-
 let previousDigitLength = 1;
-
 let holdTimeout = null;
-let holdSpeed = 260;
-
-let lastSoundTime = 0;
-
-let famicomMode = false;
-
-let overclocked = false;
-
+let holdSpeed = 240;
 let autoInterval = null;
-let autoSpeed = 1000;
-
-let fpsVisible = false;
-
-let fps = 0;
-let frameCount = 0;
-let lastFpsTime = performance.now();
-
-let helpVisible = false;
-
-/* =========================================
-   SOUND
-========================================= */
+let autoSpeed = 100;
 
 function playCarrySound(){
-
-    const now = Date.now();
-
-    if(now - lastSoundTime < 120){
-        return;
-    }
-
-    lastSoundTime = now;
 
     const audioCtx =
         new (
@@ -761,47 +443,39 @@ function playCarrySound(){
             window.webkitAudioContext
         )();
 
-    const notes = famicomMode
-        ? [523.25,659.25,1046.5]
-        : [523.25,659.25,783.99];
+    const notes = [523.25,659.25,783.99];
 
     notes.forEach((freq,index)=>{
 
-        const osc =
+        const oscillator =
             audioCtx.createOscillator();
 
-        const gain =
+        const gainNode =
             audioCtx.createGain();
 
-        osc.type =
-            famicomMode
-            ? "square"
-            : "triangle";
+        oscillator.type = "square";
 
-        osc.frequency.value = freq;
+        oscillator.frequency.value = freq;
 
-        gain.gain.value =
-            0.04 + index * 0.02;
+        gainNode.gain.value = 0.1;
 
-        osc.connect(gain);
+        oscillator.connect(gainNode);
 
-        gain.connect(audioCtx.destination);
+        gainNode.connect(audioCtx.destination);
 
         const start =
-            audioCtx.currentTime
-            + index * 0.04;
+            audioCtx.currentTime + index * 0.04;
 
-        osc.start(start);
+        oscillator.start(start);
 
-        osc.stop(start + 0.08);
+        oscillator.stop(start + 0.06);
     });
 }
 
-/* =========================================
-   PARSE
-========================================= */
-
 function parseBigInt(str, base){
+
+    const chars =
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     str = str.toUpperCase().trim();
 
@@ -809,12 +483,10 @@ function parseBigInt(str, base){
 
     for(let i=0;i<str.length;i++){
 
-        const digit =
-            chars.indexOf(str[i]);
+        const digit = chars.indexOf(str[i]);
 
         if(digit < 0 || digit >= base){
-
-            throw new Error("invalid");
+            throw new Error("無効文字");
         }
 
         result =
@@ -825,43 +497,103 @@ function parseBigInt(str, base){
     return result;
 }
 
-/* =========================================
-   CALC
-========================================= */
-
 function evaluateExpression(expr, base){
 
-    expr = expr.toUpperCase();
+    expr = expr.replace(/[0-9A-F]+/gi, match => {
 
-    const regex =
-        new RegExp(
-            `[${chars.slice(0,base)}]+`,
-            "g"
-        );
+        return parseBigInt(match, base)
+            .toString()
+            + "n";
+    });
 
-    expr =
-        expr.replace(regex, match=>{
-
-            return parseBigInt(match, base)
-                .toString()
-                + "n";
-        });
-
-    return Function(`
-        return (${expr});
-    `)();
+    return Function(
+        `return (${expr})`
+    )();
 }
 
-/* =========================================
-   CHANGE COUNT
-========================================= */
+function startAuto(){
+
+    stopAuto();
+
+    autoInterval = setInterval(()=>{
+
+        currentCount++;
+
+        updateDisplay();
+
+    }, autoSpeed);
+
+    document
+    .getElementById('autoStatus')
+    .style.display = 'block';
+}
+
+function stopAuto(){
+
+    clearInterval(autoInterval);
+
+    autoInterval = null;
+
+    document
+    .getElementById('autoStatus')
+    .style.display = 'none';
+}
+
+function toggleAuto(){
+
+    if(autoInterval){
+        stopAuto();
+    }else{
+        startAuto();
+    }
+}
+
+function toggleCommands(){
+
+    const panel =
+        document.getElementById('commandPanel');
+
+    panel.classList.toggle('show');
+}
+
+function runCommand(cmd){
+
+    switch(cmd){
+
+        case "/help":
+            toggleCommands();
+            return true;
+
+        case "/auto":
+            toggleAuto();
+            return true;
+
+        case "/matrix":
+            document.body.classList.toggle('matrix');
+            return true;
+
+        case "/rgb":
+            document.body.classList.toggle('rgb');
+            return true;
+
+        case "/crt":
+            document.body.classList.toggle('crt');
+            return true;
+
+        case "/root":
+            document.documentElement.style
+            .setProperty('--accent-color','#00ffcc');
+            return true;
+    }
+
+    return false;
+}
 
 function changeCount(val){
 
     currentCount += BigInt(val);
 
     if(currentCount < 0n){
-
         currentCount = 0n;
     }
 
@@ -870,29 +602,22 @@ function changeCount(val){
     updateDisplay();
 }
 
-/* =========================================
-   HOLD
-========================================= */
-
 function startChanging(val){
 
     stopChanging();
 
     changeCount(val);
 
-    holdSpeed = 260;
+    holdSpeed = 240;
 
     function repeat(){
 
         changeCount(val);
 
-        holdSpeed *= overclocked
-            ? 0.75
-            : 0.92;
+        holdSpeed *= 0.94;
 
-        if(holdSpeed < 5){
-
-            holdSpeed = 5;
+        if(holdSpeed < 25){
+            holdSpeed = 25;
         }
 
         holdTimeout =
@@ -900,19 +625,13 @@ function startChanging(val){
     }
 
     holdTimeout =
-        setTimeout(repeat, 600);
+        setTimeout(repeat, 500);
 }
 
 function stopChanging(){
 
     clearTimeout(holdTimeout);
-
-    holdTimeout = null;
 }
-
-/* =========================================
-   RESET
-========================================= */
 
 function resetCount(){
 
@@ -923,11 +642,11 @@ function resetCount(){
     updateDisplay();
 }
 
-/* =========================================
-   SYNC INPUT
-========================================= */
-
 function syncInput(){
+
+    if(autoInterval){
+        return;
+    }
 
     const base =
         parseInt(
@@ -940,288 +659,41 @@ function syncInput(){
             .toUpperCase();
 }
 
-/* =========================================
-   ACCENT
-========================================= */
-
-function setAccent(color){
-
-    document.documentElement
-        .style.setProperty(
-            '--accent-color',
-            color
-        );
-}
-
-/* =========================================
-   COMMANDS
-========================================= */
-
-const commands = {
-
-    "/help":()=>{
-
-        helpVisible = !helpVisible;
-
-        document
-            .getElementById('commandPanel')
-            .classList.toggle(
-                'show',
-                helpVisible
-            );
-    },
-
-    "/matrix":()=>{
-
-        setAccent("#00ff99");
-    },
-
-    "/red":()=>{
-
-        setAccent("#ff3333");
-    },
-
-    "/blue":()=>{
-
-        setAccent("#00aaff");
-    },
-
-    "/resetcolor":()=>{
-
-        setAccent("#39ff14");
-    },
-
-    "/rgb":()=>{
-
-        clearInterval(window.rgbInterval);
-
-        let hue = 0;
-
-        window.rgbInterval =
-            setInterval(()=>{
-
-                hue += 3;
-
-                setAccent(
-                    `hsl(${hue},100%,50%)`
-                );
-
-            },30);
-    },
-
-    "/rgb_off":()=>{
-
-        clearInterval(window.rgbInterval);
-
-        setAccent("#39ff14");
-    },
-
-    "/crt":()=>{
-
-        document.body.classList.add("crt");
-    },
-
-    "/crt_off":()=>{
-
-        document.body.classList.remove("crt");
-    },
-
-    "/famicom":()=>{
-
-        famicomMode = !famicomMode;
-
-        playCarrySound();
-    },
-
-    "/overclock":()=>{
-
-        overclocked = !overclocked;
-
-        document.documentElement
-            .style.setProperty(
-                '--glow-strength',
-                overclocked ? 2 : 1
-            );
-
-        playCarrySound();
-    },
-
-    "/root":()=>{
-
-        setAccent("#00ff66");
-
-        document.body.style.background =
-            "radial-gradient(circle,#001100,#000000)";
-
-        document.getElementById('rootBadge')
-            .style.opacity = 1;
-
-        overclocked = true;
-
-        document.documentElement
-            .style.setProperty(
-                '--glow-strength',
-                2.5
-            );
-
-        playCarrySound();
-    },
-
-    "/reset":()=>{
-
-        clearInterval(window.rgbInterval);
-
-        document.body.classList.remove("crt");
-
-        document.body.style.background =
-            "#000";
-
-        document.getElementById('rootBadge')
-            .style.opacity = 0;
-
-        setAccent("#39ff14");
-
-        overclocked = false;
-
-        famicomMode = false;
-
-        document.documentElement
-            .style.setProperty(
-                '--glow-strength',
-                1
-            );
-
-        currentCount = 0n;
-
-        syncInput();
-
-        updateDisplay();
-    },
-
-    "/auto":()=>{
-
-        if(autoInterval){
-
-            clearInterval(autoInterval);
-
-            autoInterval = null;
-
-            return;
-        }
-
-        autoInterval =
-            setInterval(()=>{
-
-                changeCount(1);
-
-            }, autoSpeed);
-    },
-
-    "/stats":()=>{
-
-        fpsVisible = !fpsVisible;
-
-        document.getElementById('fpsDisplay')
-            .style.opacity =
-            fpsVisible ? 1 : 0;
-    }
-};
-
-/* =========================================
-   INPUT APPLY
-========================================= */
-
 function setCount(){
 
     const input =
         document.getElementById('countInput');
 
-    const raw =
+    const text =
         input.value.trim();
+
+    if(runCommand(text)){
+        return;
+    }
 
     const base =
         parseInt(
             document.getElementById('baseSelect').value
         );
 
-    if(raw.startsWith("/speed ")){
-
-        const value =
-            parseInt(
-                raw.replace("/speed ","")
-            );
-
-        if(value > 0){
-
-            autoSpeed = value;
-
-            if(autoInterval){
-
-                clearInterval(autoInterval);
-
-                autoInterval =
-                    setInterval(()=>{
-
-                        changeCount(1);
-
-                    }, autoSpeed);
-            }
-        }
-
-        return;
-    }
-
-    if(commands[raw]){
-
-        commands[raw]();
-
-        updateDisplay();
-
-        return;
-    }
-
     try{
 
         currentCount =
             BigInt(
-                evaluateExpression(
-                    raw,
-                    base
-                )
+                evaluateExpression(text, base)
             );
 
         if(currentCount < 0n){
-
             currentCount = 0n;
         }
 
     }catch{
 
-        input.style.borderColor =
-            '#ff3333';
-
-        input.style.boxShadow =
-            '0 0 25px rgba(255,0,0,0.8)';
-
-        setTimeout(()=>{
-
-            input.style.borderColor =
-                'var(--accent-color)';
-
-            input.style.boxShadow =
-                '0 0 20px rgba(57,255,20,0.15)';
-
-        },300);
-
-        return;
+        currentCount = 0n;
     }
 
     updateDisplay();
 }
-
-/* =========================================
-   UPDATE
-========================================= */
 
 function updateDisplay(){
 
@@ -1230,7 +702,9 @@ function updateDisplay(){
             document.getElementById('baseSelect').value
         );
 
-    document.getElementById('totalDecimal').innerText =
+    document
+    .getElementById('totalDecimal')
+    .innerText =
         currentCount.toString();
 
     let digits = [];
@@ -1251,12 +725,11 @@ function updateDisplay(){
                 Number(temp % bigBase)
             );
 
-            temp /= bigBase;
+            temp = temp / bigBase;
         }
     }
 
     if(digits.length > previousDigitLength){
-
         playCarrySound();
     }
 
@@ -1264,10 +737,6 @@ function updateDisplay(){
 
     renderDials(digits, base);
 }
-
-/* =========================================
-   RENDER
-========================================= */
 
 function renderDials(digits, base){
 
@@ -1366,10 +835,6 @@ function renderDials(digits, base){
     });
 }
 
-/* =========================================
-   DRAW NUMBERS
-========================================= */
-
 function drawDialNumbers(container, base){
 
     container.innerHTML = '';
@@ -1391,16 +856,13 @@ function drawDialNumbers(container, base){
             i.toString(base).toUpperCase();
 
         const angle =
-            (i / base)
-            * (Math.PI * 2);
+            (i / base) * (Math.PI * 2);
 
         const x =
-            Math.sin(angle)
-            * radius;
+            Math.sin(angle) * radius;
 
         const y =
-            -Math.cos(angle)
-            * radius;
+            -Math.cos(angle) * radius;
 
         div.style.transform =
             `translate(${x}px, ${y}px)`;
@@ -1409,54 +871,37 @@ function drawDialNumbers(container, base){
     }
 }
 
-/* =========================================
-   FPS LOOP
-========================================= */
+let fps = 0;
+let lastTime = performance.now();
 
-function fpsLoop(){
-
-    frameCount++;
+function updateFPS(){
 
     const now = performance.now();
 
-    if(now - lastFpsTime >= 1000){
+    fps = Math.round(1000 / (now - lastTime));
 
-        fps = frameCount;
+    lastTime = now;
 
-        frameCount = 0;
+    document.getElementById('fpsCounter').innerText =
+        `FPS: ${fps}`;
 
-        lastFpsTime = now;
-
-        if(fpsVisible){
-
-            document.getElementById('fpsDisplay')
-                .innerText =
-                `FPS: ${fps}`;
-        }
-    }
-
-    requestAnimationFrame(fpsLoop);
+    requestAnimationFrame(updateFPS);
 }
 
-fpsLoop();
-
-/* =========================================
-   ENTER
-========================================= */
+updateFPS();
 
 document
 .getElementById('countInput')
 .addEventListener('keydown', function(e){
 
     if(e.key === 'Enter'){
-
         setCount();
     }
-});
 
-/* =========================================
-   INIT
-========================================= */
+    if(e.key === 'Escape'){
+        stopAuto();
+    }
+});
 
 updateDisplay();
 
@@ -1464,3 +909,4 @@ updateDisplay();
 
 </body>
 </html>
+```
