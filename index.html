@@ -372,7 +372,52 @@ CRTモード
 
 <div class="command-item">
 /root<br>
-ROOTモード
+ROOTテーマ変更
+</div>
+
+<div class="command-item">
+/fps<br>
+FPS表示 ON/OFF
+</div>
+
+<div class="command-item">
+/neon<br>
+ネオン強化
+</div>
+
+<div class="command-item">
+/dark<br>
+ダークモード
+</div>
+
+<div class="command-item">
+/resetfx<br>
+エフェクト初期化
+</div>
+
+<div class="command-item">
+/glow<br>
+全体発光強化
+</div>
+
+<div class="command-item">
+/shadow<br>
+シャドウ演出
+</div>
+
+<div class="command-item">
+/invert<br>
+色反転
+</div>
+
+<div class="command-item">
+/shake<br>
+画面シェイク
+</div>
+
+<div class="command-item">
+/scan<br>
+スキャンライン強化
 </div>
 
 </div>
@@ -580,6 +625,59 @@ function runCommand(cmd){
         case "/root":
             document.documentElement.style
             .setProperty('--accent-color','#00ffcc');
+            return true;
+
+        case "/fps":
+            const fps = document.getElementById('fpsCounter');
+            fps.style.display =
+                fps.style.display === 'none'
+                ? 'block'
+                : 'none';
+            return true;
+
+        case "/neon":
+            document.documentElement.style
+            .setProperty('--accent-color','#7dff6b');
+            return true;
+
+        case "/dark":
+            document.body.style.background = '#000';
+            return true;
+
+        case "/resetfx":
+            document.body.className = '';
+            document.documentElement.style
+            .setProperty('--accent-color','#39ff14');
+            return true;
+
+        case "/glow":
+            document.body.style.filter = 'drop-shadow(0 0 20px #39ff14)';
+            return true;
+
+        case "/shadow":
+            document.body.style.boxShadow = 'inset 0 0 80px rgba(0,0,0,0.9)';
+            return true;
+
+        case "/invert":
+            document.body.style.filter = 'invert(1)';
+            return true;
+
+        case "/shake":
+            document.body.animate(
+                [
+                    {transform:'translateX(-5px)'},
+                    {transform:'translateX(5px)'},
+                    {transform:'translateX(0px)'}
+                ],
+                {
+                    duration:300,
+                    iterations:3
+                }
+            );
+            return true;
+
+        case "/scan":
+            document.body.classList.add('crt');
             return true;
     }
 
